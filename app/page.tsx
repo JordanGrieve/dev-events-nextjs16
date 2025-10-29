@@ -1,8 +1,9 @@
 import EventCard from '@/components/EventCard';
 import ExploreBtn from '@/components/ExploreBtn';
-import { events } from '@/lib/constants';
 
-const Page = () => {
+const Page = async () => {
+  const respone = await fetch('/api/events/featured', { cache: 'no-store' });
+  const { data: events } = await respone.json();
   return (
     <section>
       <h1 className="text-center">
