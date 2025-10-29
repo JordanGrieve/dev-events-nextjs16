@@ -6,10 +6,6 @@ import Image from 'next/image';
 import BookEvent from '@/components/BookEvent';
 import EventCard from '@/components/EventCard';
 
-import { cacheLife } from 'next/cache';
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
 const EventDetailItem = ({
   icon,
   alt,
@@ -46,23 +42,31 @@ const EventTags = ({ tags }: { tags: string[] }) => (
   </div>
 );
 
-const EventDetails = async ({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) => {
-  'use cache';
-  cacheLife('hours');
-  const slug = await params;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-  const request = await fetch(`${BASE_URL}/api/events/${slug}`);
+const EventDetails = async ({ params }: { params: { slug: string } }) => {
+  // Extract slug string
+  const slug = params.slug;
+
+  // Build API URL: use public base if provided, otherwise use relative path
+  const apiUrl = BASE_URL
+    ? `${BASE_URL}/api/events/${slug}`
+    : `/api/events/${slug}`;
+
+  const request = await fetch(apiUrl, { cache: 'no-store' });
+  if (!request.ok) {
+    return notFound();
+  }
+
   const { data: event } = await request.json();
 
   if (!event) return notFound();
 
+  // Example bookings count (replace with real data if available)
   const bookings = 10;
 
-  const similarEvents: IEvent[] = await getSimilarEventsBySlug(slug);
+  // Use the event slug (string) for finding similar events
+  const similarEvents: IEvent[] = await getSimilarEventsBySlug(event.slug);
 
   return (
     <section id="event">
@@ -90,7 +94,7 @@ const EventDetails = async ({
             <h2>Event Details</h2>
             <EventDetailItem
               icon="/icons/calendar.svg"
-              alt="calender"
+              alt="calendar"
               label={event.date}
             />
             <EventDetailItem
@@ -124,19 +128,19 @@ const EventDetails = async ({
 
           <EventTags tags={event.tags} />
         </div>
-        {/* Righjt Side */}
+        {/* Right Side */}
         <aside className="booking">
           <div className="signup-card">
             <h2>Book Your Spot</h2>
             {bookings > 0 ? (
               <p className="text-sm">
-                Joing {bookings} people who have already booked thier spot!
+                Joining {bookings} people who have already booked their spot!
               </p>
             ) : (
               <p className="text-sm">Be the first to join</p>
             )}
 
-            <BookEvent eventId={event._id} slug={event.slug} />
+            <BookEvent eventId={String(event._id)} slug={event.slug} />
           </div>
         </aside>
       </div>
@@ -145,7 +149,15 @@ const EventDetails = async ({
         <div className="events">
           {similarEvents.length > 0 &&
             similarEvents.map((similarEvent: IEvent) => (
-              <EventCard key={similarEvent.title} {...similarEvent} />
+              <EventCard
+                key={similarEvent.slug || String(similarEvent._id)}
+                title={similarEvent.title}
+                image={similarEvent.image}
+                slug={similarEvent.slug}
+                location={similarEvent.location}
+                date={similarEvent.date}
+                time={similarEvent.time}
+              />
             ))}
         </div>
       </div>

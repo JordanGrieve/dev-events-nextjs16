@@ -1,22 +1,23 @@
 'use client';
 
 import Image from 'next/image';
+
 function ExploreBtn() {
   return (
-    <button
-      type="button"
+    <a
+      href="#events"
       id="explore-btn"
-      className="mt-7 mx-auto"
-      onClick={() => console.log('dsad')}
+      className="mt-7 mx-auto inline-flex items-center gap-2"
+      role="button"
     >
-      <a href="#events">Explore Events</a>
+      <span>Explore Events</span>
       <Image
         src="/icons/arrow-down.svg"
         alt="down arrow"
-        width="24"
-        height="24"
+        width={24}
+        height={24}
       />
-    </button>
+    </a>
   );
 }
 
