@@ -7,7 +7,15 @@ const Page = async () => {
     { cache: 'no-store' }
   );
 
-  const { data: events } = await response.json();
+  if (!response.ok) {
+    console.error('Failed to fetch events:', response.status);
+    return <p>Failed to load events.</p>;
+  }
+
+  const json = await response.json();
+  console.log('API response:', json);
+
+  const events = json.data || json; // ✅ flexible
 
   return (
     <section>
@@ -17,17 +25,20 @@ const Page = async () => {
       <p className="text-center m-5">
         Hackathons, Meetups, Conferences — All in One Place
       </p>
-
       <ExploreBtn />
 
       <div className="mt-20 space-y-7">
         <h3>Featured Events</h3>
         <ul className="events list-none">
-          {events.map((event) => (
-            <li key={event.title}>
-              <EventCard {...event} />
-            </li>
-          ))}
+          {Array.isArray(events) && events.length > 0 ? (
+            events.map((event) => (
+              <li key={event.title}>
+                <EventCard {...event} />
+              </li>
+            ))
+          ) : (
+            <p>No events found.</p>
+          )}
         </ul>
       </div>
     </section>
