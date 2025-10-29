@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
   },
   reactCompiler: true,
   experimental: {
-    turbopackFileSystemCacheForDev: true,
+    turbopackFileSystemCacheForDev: false,
   },
   async rewrites() {
     return [
